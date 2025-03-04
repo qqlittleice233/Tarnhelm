@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
@@ -57,6 +58,7 @@ android {
         viewBinding true
         buildConfig true
         aidl true
+        compose true
     }
     packagingOptions {
         jniLibs {
@@ -66,6 +68,11 @@ android {
             excludes += ['META-INF/**', 'kotlin/**', 'okhttp3/**', 'org/**', '**.properties', '**.bin', '**kotlin**']
         }
     }
+}
+
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+//    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
 }
 
 configurations.configureEach {
@@ -120,4 +127,22 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+
+
+    // compose
+    def composeBom = platform('androidx.compose:compose-bom:2025.02.00')
+    implementation composeBom
+    androidTestImplementation composeBom
+    // Material Design 2
+//    implementation 'androidx.compose.material:material'
+    // Material Design 3
+    implementation 'androidx.compose.material3:material3'
+    // Android Studio Preview support
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    // UI Tests
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7'
+    implementation 'androidx.activity:activity-compose:1.10.1'
 }

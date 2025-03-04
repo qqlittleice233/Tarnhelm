@@ -42,15 +42,27 @@
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/extensionsRecyclerView"
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/extensionsRecyclerView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:clipToPadding="false"-->
+<!--        android:orientation="vertical"-->
+<!--        android:paddingTop="10dp"-->
+<!--        android:paddingBottom="150dp"-->
+<!--        app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingTop="10dp"
-        android:paddingBottom="150dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:paddingTop="150dp">
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/extensionsComposeView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </FrameLayout>
+
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/importFab"

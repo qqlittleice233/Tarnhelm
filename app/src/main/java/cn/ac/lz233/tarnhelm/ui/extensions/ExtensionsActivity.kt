@@ -1,7 +1,6 @@
 package cn.ac.lz233.tarnhelm.ui.extensions
 
 import android.Manifest
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -10,19 +9,43 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import cn.ac.lz233.tarnhelm.R
 import cn.ac.lz233.tarnhelm.databinding.ActivityExtensionsBinding
 import cn.ac.lz233.tarnhelm.extension.ExtensionManager
 import cn.ac.lz233.tarnhelm.ui.SecondaryBaseActivity
-import cn.ac.lz233.tarnhelm.util.LogUtil
-import cn.ac.lz233.tarnhelm.util.ktx.unzip
 import com.google.android.material.snackbar.Snackbar
 import com.permissionx.guolindev.PermissionX
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
-import kotlin.system.exitProcess
 
 class ExtensionsActivity : SecondaryBaseActivity() {
 
@@ -67,7 +90,18 @@ class ExtensionsActivity : SecondaryBaseActivity() {
             startImport()
         }
 
-        ExtensionManager.startExtensionConfigurationPanel("cn.ac.lz233.tarnhelm.ext.example", this)
+        binding.extensionsComposeView.setContent {
+            LazyColumn(
+                contentPadding = PaddingValues(20.dp)
+            ) {
+                items(10) {
+                    ExtensionItem()
+                    Spacer(modifier = Modifier.padding(vertical = 10.dp))
+                }
+            }
+        }
+
+//        ExtensionManager.startExtensionConfigurationPanel("cn.ac.lz233.tarnhelm.ext.example", this)
     }
 
     private fun startImport() {
@@ -90,5 +124,124 @@ class ExtensionsActivity : SecondaryBaseActivity() {
 
     companion object {
         fun actionStart(context: Context) = context.startActivity(Intent(context, ExtensionsActivity::class.java))
+    }
+}
+
+@Preview
+@Composable
+fun ExtensionItem() {
+    // name, version, versionName, author, description, hasConfigurationPanel, enabled, regexes
+    val name = "Extension Name"
+    val versionName = "v1.0.0"
+    val version = 100
+    val author = "lz233"
+//    val description = "This is a ${"long ".repeat(100)}description."
+    val description = "This is a short description."
+    val enabled = false
+    val hasUpdate by remember { mutableStateOf(true) }
+    val regexes = listOf(
+//        "(\\W|^)[\\w.\\-]{0,25}@(yahoo|hotmail|gmail)\\.com(\\W|\$)",
+//        "192\\.168\\.1\\.",
+//        "(\\W|^)stock\\stips(\\W|\$)",
+//        "(?i)(\\W|^)(baloney|darn|drat|fooey|gosh\\sdarnit|heck)(\\W|\$)",
+//        "f[a4@][s5\\\$][t7] +c[a4@][s5\\\$]h",
+//        "^[0-9]+\$",
+//        "[1-9][0-9]*|0",
+        "^[+-]?[1-9][0-9]*|0\$",
+        "[a-zA-Z_][0-9a-zA-Z_]*",
+        "^\\w+\\.(gif|png|jpg|jpeg)\$"
+    )
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(15.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.fillMaxWidth(0.8F)) {
+                    Text(
+                        text = name,
+                        fontSize = TextUnit(20F, TextUnitType.Sp),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Version: $versionName ($version)",
+                        fontSize = TextUnit(12F, TextUnitType.Sp)
+                    )
+                    Text(
+                        text = "Author: $author",
+                        fontSize = TextUnit(12F, TextUnitType.Sp)
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1F))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Switch(
+                        checked = enabled,
+                        onCheckedChange = { /*TODO*/ },
+                    )
+                }
+            }
+
+            Spacer(Modifier.fillMaxWidth().padding(vertical = 5.dp))
+
+            Text(
+                text = description,
+                style = TextStyle(fontSize = TextUnit(12F, TextUnitType.Sp))
+            )
+
+            Spacer(Modifier.fillMaxWidth().padding(vertical = 5.dp))
+
+            if (regexes.size > 6) {
+                Text(
+                    buildAnnotatedString {
+                        append("Regexes:\n")
+                        append(regexes.take(5).joinToString("\n"))
+                    },
+                    fontSize = TextUnit(12F, TextUnitType.Sp),
+                    lineHeight = TextUnit(1.5F, TextUnitType.Em)
+                )
+                Text(
+                    text = "... and ${regexes.size - 5} more",
+                    style = TextStyle(color = Color(0xFF3578E5), fontWeight = FontWeight.Bold),
+                    fontSize = TextUnit(12F, TextUnitType.Sp),
+                    lineHeight = TextUnit(1.5F, TextUnitType.Em),
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier.clickable { /* TODO */ }
+                )
+            } else {
+                Text(
+                    text = regexes.joinToString("\n"),
+                    fontSize = TextUnit(12F, TextUnitType.Sp),
+                    lineHeight = TextUnit(1.5F, TextUnitType.Em)
+                )
+            }
+
+
+            Spacer(Modifier.fillMaxWidth().padding(vertical = 5.dp))
+            HorizontalDivider(thickness = 3.dp)
+            Spacer(Modifier.fillMaxWidth().padding(vertical = 3.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (hasUpdate) {
+                    Button(
+                        onClick = { /*TODO*/ }
+                    ) {
+                        Text(
+                            text = "Update"
+                        )
+                    }
+                }
+                Button(
+                    onClick = { /*TODO*/ }
+                ) {
+                    Text(
+                        text = "Uninstall"
+                    )
+                }
+            }
+        }
     }
 }
