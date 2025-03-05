@@ -12,12 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
@@ -27,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,10 +41,12 @@ import androidx.compose.ui.unit.dp
 import cn.ac.lz233.tarnhelm.R
 import cn.ac.lz233.tarnhelm.databinding.ActivityExtensionsBinding
 import cn.ac.lz233.tarnhelm.extension.ExtensionManager
+import cn.ac.lz233.tarnhelm.extension.ExtensionRecord
 import cn.ac.lz233.tarnhelm.ui.SecondaryBaseActivity
 import com.google.android.material.snackbar.Snackbar
 import com.permissionx.guolindev.PermissionX
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 class ExtensionsActivity : SecondaryBaseActivity() {
@@ -90,13 +92,74 @@ class ExtensionsActivity : SecondaryBaseActivity() {
             startImport()
         }
 
+        extensionList = ExtensionManager.getInstalledExtensions()
+
         binding.extensionsComposeView.setContent {
-            LazyColumn(
-                contentPadding = PaddingValues(20.dp)
-            ) {
-                items(10) {
-                    ExtensionItem()
-                    Spacer(modifier = Modifier.padding(vertical = 10.dp))
+            Column(Modifier.fillMaxSize()) {
+                Button(
+                    onClick = {
+                        val ext = ExtensionManager.getInstalledExtensions().firstOrNull()
+                        ext?.let { ExtensionManager.enableExtension(it) }
+                    }
+                ) {
+                    Text("Enable")
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Button(
+                    onClick = {
+                        val ext = ExtensionManager.getInstalledExtensions().firstOrNull()
+                        ext?.let { ExtensionManager.disableExtension(it) }
+                    }
+                ) {
+                    Text("Disable")
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Button(
+                    onClick = {
+                        val ext = ExtensionManager.getInstalledExtensions().firstOrNull()
+                        ext?.let { ExtensionManager.uninstallExtension(it) }
+                    }
+                ) {
+                    Text("Uninstall")
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Button(
+                    onClick = {
+                        val ext = ExtensionManager.getInstalledExtensions().firstOrNull()
+                        ext?.let {
+                            launch {
+                                val result = async { ExtensionManager.requestHandleString(it, "Hello, World!") }
+                                Log.d("ExtensionManager", "HandleString: ${result.await()}")
+                            }
+                        }
+                    }
+                ) {
+                    Text("HandleString")
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Button(
+                    onClick = {
+                        val ext = ExtensionManager.getInstalledExtensions().firstOrNull()
+                        ext?.let {
+                            launch {
+                                val result = async { ExtensionManager.requestCheckUpdate(it) }
+                                Log.d("ExtensionManager", "CheckUpdate: ${result.await()}")
+                            }
+                        }
+                    }
+                ) {
+                    Text("CheckUpdate")
+                }
+                Spacer(Modifier.padding(vertical = 5.dp))
+                Button(
+                    onClick = {
+                        val ext = ExtensionManager.getInstalledExtensions().firstOrNull()
+                        ext?.let {
+                            ExtensionManager.startExtensionConfigurationPanel(it, this@ExtensionsActivity)
+                        }
+                    }
+                ) {
+                    Text("Panel")
                 }
             }
         }
@@ -126,6 +189,8 @@ class ExtensionsActivity : SecondaryBaseActivity() {
         fun actionStart(context: Context) = context.startActivity(Intent(context, ExtensionsActivity::class.java))
     }
 }
+
+var extensionList by mutableStateOf<List<ExtensionRecord>>(emptyList())
 
 @Preview
 @Composable
